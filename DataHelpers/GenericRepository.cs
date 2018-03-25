@@ -57,7 +57,7 @@ namespace DataHelpers
             }
             return new DataResult<IEnumerable<T>>(result, new StatusResult(success, errors));
         }
-
+        
         public DataResult<IEnumerator<T>> GetAllByPaging(int pageIndex, int pageSize, Expression<Func<T, bool>> filter = null)
         {
             throw new NotImplementedException();
@@ -142,9 +142,36 @@ namespace DataHelpers
             return new DataResult<int>(count,new StatusResult(success,errors));
 
         }
-        public DataResult<T> ExecuteSqlCommand(string query, params object[] sqlParameters)
+        public DataResult<int> ExecuteSqlCommand(string query, params object[] sqlParameters)
         {
-            throw new NotImplementedException();
+            bool success = true;
+            List<string> errors = new List<string>();
+            int result = 0;
+            try
+            {
+                if(string.IsNullOrEmpty(query))
+                {
+                    success = false;
+                    errors.Add("Query cannot be empty");
+                }
+                else
+                {
+                    if(sqlParameters!=null && sqlParameters.Count() > 0)
+                    {
+                        result = _ctx.Database.ExecuteSqlCommand(query,sqlParameters);
+                    }
+                    else
+                    {
+                        result = _ctx.Database.ExecuteSqlCommand(query);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                success = false;
+                errors.Add(ex.Message);
+            }
+            return new DataResult<int>(result, new StatusResult(success, errors));
         }
     }
 }
