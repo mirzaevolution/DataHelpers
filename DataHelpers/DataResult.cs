@@ -15,7 +15,7 @@
         /// <summary>
         /// Main value passed as a result
         /// </summary>
-        public T Data { get; private set; }
+        public T Data { get; set; }
         /// <summary>
         /// Status of the operation
         /// </summary>

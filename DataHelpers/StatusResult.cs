@@ -16,11 +16,11 @@ namespace DataHelpers
         /// <summary>
         /// A flag that indicates certain operation succeeded or not
         /// </summary>
-        public bool IsSuccess { get; private set; }
+        public bool IsSuccess { get; set; }
 
         /// <summary>
         /// List of errors
         /// </summary>
-        public List<string> Errors { get; private set; }
+        public List<string> Errors { get; set; }
     }
 }
