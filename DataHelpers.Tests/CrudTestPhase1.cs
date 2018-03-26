@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Unity;
@@ -75,6 +76,40 @@ namespace DataHelpers.Tests
                 var getAllResult = repository.GetAll(predicateBuilder);
                 Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
                 Assert.AreEqual(getAllResult.Data.Count(), 2);
+            }
+
+        }
+        [TestMethod]
+        public void GetAllSortAscTest()
+        {
+            Register();
+            using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
+            {
+                IRepository<Employee2> repository =
+                    ctx.Repository<Employee2>();
+                var predicateBuilder = PredicateBuilder.True<Employee2>();
+                var getAllResult = repository.GetAll(null,x=>x.OrderBy(y=>y.FirstName));
+                Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
+                int count = getAllResult.Data.Count();
+                int expected = 287;
+                Assert.AreEqual(count,expected);
+            }
+
+        }
+        [TestMethod]
+        public void GetAllSortDescTest()
+        {
+            Register();
+            using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
+            {
+                IRepository<Employee2> repository =
+                    ctx.Repository<Employee2>();
+                var predicateBuilder = PredicateBuilder.True<Employee2>();
+                var getAllResult = repository.GetAll(null, x => x.OrderByDescending(y => y.FirstName));
+                Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
+                int count = getAllResult.Data.Count();
+                int expected = 287;
+                Assert.AreEqual(count, expected);
             }
 
         }
@@ -177,6 +212,23 @@ namespace DataHelpers.Tests
 
         }
         [TestMethod]
+        public void GetByRangeOrderAscTest()
+        {
+            Register();
+            using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
+            {
+                IRepository<Employee2> repository =
+                    ctx.Repository<Employee2>();
+                int pageIndex = 2;
+                int pageSize = 10;
+                var getAllResult = repository.GetAllByPaging(pageIndex, pageSize,null,x=>x.OrderBy(y=>y.FirstName));
+                Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
+                int actual = getAllResult.Data.Count();
+                Assert.AreEqual(actual, pageSize);
+            }
+
+        }
+        [TestMethod]
         public void ExistsTest()
         {
             Register();
@@ -195,6 +247,27 @@ namespace DataHelpers.Tests
                 }
                 else
                     Assert.Fail("Failed in first phase checking");
+            }
+        }
+        [TestMethod]
+        public void ExecuteUpdateCommandTest()
+        {
+            string query = @"UPDATE Test.Employee
+                             SET EmailAddress = 'ken.zena@adventure-works.com' 
+                             WHERE ID = @ID";
+            Register();
+            using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
+            {
+                IRepository<Employee2> repository = ctx.Repository<Employee2>();
+                var execResult = repository.ExecuteSqlCommand(query, new SqlParameter("@ID", 1));
+                if(execResult.Status.IsSuccess)
+                {
+                    Assert.AreNotEqual(execResult.Data, 0);
+                }
+                else
+                {
+                    Assert.Fail("Execution failed in the first phase");
+                }
             }
         }
     }

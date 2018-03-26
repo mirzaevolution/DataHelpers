@@ -34,20 +34,27 @@ namespace DataHelpers
             return new DataResult<T>(entity, new StatusResult(success, errors));
         }
 
-        public DataResult<IEnumerable<T>> GetAll(Expression<Func<T, bool>> filter = null)
+        public DataResult<IEnumerable<T>> GetAll(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> order = null)
         {
             bool success = true;
             List<string> errors = new List<string>();
-            IEnumerable<T> result = null;
+            IQueryable<T> result = null;
             try
             {
                 if(filter!=null)
                 {
+                    
                     result = _set.Where(filter);
                 }
                 else
                 {
                     result = _set;
+                }
+                if(order!=null)
+                {
+                    result = order(result);
                 }
             }
             catch (Exception ex)
@@ -58,21 +65,30 @@ namespace DataHelpers
             return new DataResult<IEnumerable<T>>(result, new StatusResult(success, errors));
         }
         
-        public DataResult<IEnumerable<T>> GetAllByPaging(int pageIndex, int pageSize, Expression<Func<T, bool>> filter = null)
+        public DataResult<IEnumerable<T>> GetAllByPaging(int pageIndex, 
+            int pageSize, 
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> order = null)
         {
             bool success = true;
             List<string> errors = new List<string>();
-            IEnumerable<T> result = null;
+            IQueryable<T> result = null;
             try
             {
                 if (filter != null)
                 {
-                    result = _set.Where(filter).ToList().Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+                    result = _set.Where(filter);
                 }
                 else
                 {
-                    result = _set.ToList().Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+                    result = _set;
                 }
+
+                if(order!=null)
+                {
+                    result = order(result);
+                }
+                result = result.Skip(pageSize * (pageIndex - 1)).Take(pageSize);
             }
             catch (Exception ex)
             {
