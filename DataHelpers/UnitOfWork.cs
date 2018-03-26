@@ -36,6 +36,21 @@ namespace DataHelpers
             }
             return new StatusResult(success, errors);
         }
+        public async Task<StatusResult> SaveAsync()
+        {
+            bool success = true;
+            List<string> errors = new List<string>();
+            try
+            {
+                await _coreContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                errors.Add(ex.Message);
+            }
+            return new StatusResult(success, errors);
+        }
         public void Dispose()
         {
             Disposing(true);

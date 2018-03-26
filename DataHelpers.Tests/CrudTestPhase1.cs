@@ -270,5 +270,26 @@ namespace DataHelpers.Tests
                 }
             }
         }
+        [TestMethod]
+        public void SqlQueryCommandTest()
+        {
+            string query = @"SELECT * FROM Test.Employee WHERE FirstName LIKE CONCAT(@Name,'%')";
+            Register();
+            using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
+            {
+                IRepository<Employee2> repository = ctx.Repository<Employee2>();
+                var execResult = repository.SqlQuery(query, new SqlParameter("@Name", "Matth"));
+                if (execResult.Status.IsSuccess)
+                {
+                    var dataActual = execResult.Data.ToList();
+                    
+                    Assert.AreEqual(dataActual.Count, 2);
+                }
+                else
+                {
+                    Assert.Fail("Execution failed in the first phase");
+                }
+            }
+        }
     }
 }
