@@ -58,9 +58,28 @@ namespace DataHelpers
             return new DataResult<IEnumerable<T>>(result, new StatusResult(success, errors));
         }
         
-        public DataResult<IEnumerator<T>> GetAllByPaging(int pageIndex, int pageSize, Expression<Func<T, bool>> filter = null)
+        public DataResult<IEnumerable<T>> GetAllByPaging(int pageIndex, int pageSize, Expression<Func<T, bool>> filter = null)
         {
-            throw new NotImplementedException();
+            bool success = true;
+            List<string> errors = new List<string>();
+            IEnumerable<T> result = null;
+            try
+            {
+                if (filter != null)
+                {
+                    result = _set.Where(filter).ToList().Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+                }
+                else
+                {
+                    result = _set.ToList().Skip(pageSize * (pageIndex - 1)).Take(pageSize);
+                }
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                errors.Add(ex.Message);
+            }
+            return new DataResult<IEnumerable<T>>(result, new StatusResult(success, errors));
         }
 
         public DataResult<int> Insert(params T[] items)
@@ -142,6 +161,24 @@ namespace DataHelpers
             return new DataResult<int>(count,new StatusResult(success,errors));
 
         }
+        public DataResult<int> Delete(Expression<Func<T,bool>> filter)
+        {
+            bool success = true;
+            List<string> errors = new List<string>();
+            int count = 0;
+            try
+            {
+                var data = _set.Where(filter);
+                count = data.Count();
+                _set.RemoveRange(data);
+            }
+            catch(Exception ex)
+            {
+                success = false;
+                errors.Add(ex.Message);
+            }
+            return new DataResult<int>(count, new StatusResult(success, errors));
+        }
         public DataResult<int> ExecuteSqlCommand(string query, params object[] sqlParameters)
         {
             bool success = true;
@@ -172,6 +209,23 @@ namespace DataHelpers
                 errors.Add(ex.Message);
             }
             return new DataResult<int>(result, new StatusResult(success, errors));
+        }
+        public DataResult<bool> Exists(Expression<Func<T, bool>> filter)
+        {
+            bool success = true;
+            List<string> errors = new List<string>();
+            bool exists = false;
+            try
+            {
+                exists = _set.Any(filter);
+            }
+            catch (Exception ex)
+            {
+                exists = false;
+                success = false;
+                errors.Add(ex.Message);
+            }
+            return new DataResult<bool>(exists, new StatusResult(success, errors));
         }
     }
 }
