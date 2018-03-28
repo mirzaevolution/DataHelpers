@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("DataHelpers")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Data Helpers for N-Tier Architecture")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("VTI")]
 [assembly: AssemblyProduct("DataHelpers")]
 [assembly: AssemblyCopyright("Copyright ©  2018")]
 [assembly: AssemblyTrademark("")]

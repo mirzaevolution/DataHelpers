@@ -63,9 +63,8 @@ namespace DataHelpers
             return new DataResult<IEnumerable<T>>(result, new StatusResult(success, errors));
         }
         public DataResult<IEnumerable<T>> GetAllByPaging(int pageIndex, 
-            int pageSize, 
-            Expression<Func<T, bool>> filter = null,
-            Func<IQueryable<T>, IOrderedQueryable<T>> order = null)
+            int pageSize, Func<IQueryable<T>, IOrderedQueryable<T>> order,
+            Expression<Func<T, bool>> filter = null)
         {
             bool success = true;
             List<string> errors = new List<string>();
@@ -299,7 +298,7 @@ namespace DataHelpers
             return Task.FromResult(new DataResult<IEnumerable<T>>(result, new StatusResult(success, errors)));
         }
 
-        public Task<DataResult<IEnumerable<T>>> GetAllByPagingAsync(int pageIndex, int pageSize, Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> order = null)
+        public Task<DataResult<IEnumerable<T>>> GetAllByPagingAsync(int pageIndex, int pageSize, Func<IQueryable<T>, IOrderedQueryable<T>> order, Expression<Func<T, bool>> filter = null)
         {
             bool success = true;
             List<string> errors = new List<string>();

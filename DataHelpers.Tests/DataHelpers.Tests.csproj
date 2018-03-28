@@ -313,6 +313,7 @@
     </Compile>
     <Compile Include="CrudTestPhase1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CrudTestPhase2Async.cs" />
     <Compile Include="uspGetBillOfMaterials_Result.cs">
       <DependentUpon>AdvWorksEntities.tt</DependentUpon>
     </Compile>

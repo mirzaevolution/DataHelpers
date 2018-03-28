@@ -8,7 +8,7 @@ using Unity.Injection;
 namespace DataHelpers.Tests
 {
     [TestClass]
-    public class CrudTestPhase1
+    public class CrudTestPhase2Async
     {
         private static UnityContainer _container;
         public static void Register()
@@ -20,7 +20,7 @@ namespace DataHelpers.Tests
             }
         }
         [TestMethod]
-        public void InsertTest()
+        public void InsertAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -29,24 +29,24 @@ namespace DataHelpers.Tests
                 Employee2 employee = new Employee2
                 {
                     FirstName = "Matthew",
-                    LastName = "Farrell",
-                    EmailAddress = "hacker@darkzone.com",
+                    LastName = "Lampard",
+                    EmailAddress = "blackhawk@hackermail.com",
                     JobTitle = "Hacker"
                 };
                 employee.Projects.Add(new Project
                 {
-                    ProjectName = "FBI System Pentester",
+                    ProjectName = "CIA System Pentester",
                     StartDate = new DateTime(2010, 10, 21),
                     EndDate = new DateTime(2014, 09, 29)
                 });
-                var insertResult =  repo.Insert(employee);
-                var saveResult = ctx.Save();
+                var insertResult = repo.InsertAsync(employee).Result;
+                var saveResult = ctx.SaveAsync().Result;
                 Assert.IsTrue(insertResult.Status.IsSuccess && insertResult.Status.Errors.Count == 0
                      && saveResult.IsSuccess && saveResult.Errors.Count == 0);
             }
         }
         [TestMethod]
-        public void GetTest()
+        public void GetAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -55,15 +55,15 @@ namespace DataHelpers.Tests
                     ctx.Repository<Employee2>();
                 var predicateBuilder = PredicateBuilder.True<Employee2>();
                 predicateBuilder = predicateBuilder.And(x => x.FirstName.StartsWith("Mat"))
-                    .And(x => x.LastName.StartsWith("Far"));
+                    .And(x => x.LastName.StartsWith("Lamp"));
 
-                var getResult = repository.Get(predicateBuilder);
+                var getResult = repository.GetAsync(predicateBuilder).Result;
                 Assert.IsTrue(getResult.Status.IsSuccess && getResult.Status.Errors.Count == 0);
-                Assert.AreEqual(getResult.Data.ID, 294);
+                Assert.AreEqual(getResult.Data.LastName, "Lampard");
             }
         }
         [TestMethod]
-        public void GetAllTest()
+        public void GetAllAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -73,14 +73,14 @@ namespace DataHelpers.Tests
                 var predicateBuilder = PredicateBuilder.True<Employee2>();
                 predicateBuilder = predicateBuilder.And(x => x.FirstName.StartsWith("Mat"));
 
-                var getAllResult = repository.GetAll(predicateBuilder);
+                var getAllResult = repository.GetAllAsync(predicateBuilder).Result;
                 Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
-                Assert.AreEqual(getAllResult.Data.Count(), 2);
+                Assert.AreEqual(getAllResult.Data.Count(), 3);
             }
 
         }
         [TestMethod]
-        public void GetAllSortAscTest()
+        public void GetAllSortAscAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -88,16 +88,16 @@ namespace DataHelpers.Tests
                 IRepository<Employee2> repository =
                     ctx.Repository<Employee2>();
                 var predicateBuilder = PredicateBuilder.True<Employee2>();
-                var getAllResult = repository.GetAll(null,x=>x.OrderBy(y=>y.FirstName));
+                var getAllResult = repository.GetAllAsync(null, x => x.OrderBy(y => y.FirstName)).Result;
                 Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
                 int count = getAllResult.Data.Count();
-                int expected = 287;
-                Assert.AreEqual(count,expected);
+                int expected = 286;
+                Assert.AreEqual(count, expected);
             }
 
         }
         [TestMethod]
-        public void GetAllSortDescTest()
+        public void GetAllSortDescAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -108,13 +108,13 @@ namespace DataHelpers.Tests
                 var getAllResult = repository.GetAll(null, x => x.OrderByDescending(y => y.FirstName));
                 Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
                 int count = getAllResult.Data.Count();
-                int expected = 287;
+                int expected = 286;
                 Assert.AreEqual(count, expected);
             }
 
         }
         [TestMethod]
-        public void UpdateTest()
+        public void UpdateAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -123,19 +123,19 @@ namespace DataHelpers.Tests
                     ctx.Repository<Employee2>();
                 var predicateBuilder = PredicateBuilder.True<Employee2>();
                 predicateBuilder = predicateBuilder.And(x => x.FirstName.StartsWith("Mat"))
-                    .And(x => x.LastName.StartsWith("Far"));
+                    .And(x => x.LastName.StartsWith("Lampard"));
 
-                var getResult = repository.Get(predicateBuilder);
-                if(getResult.Status.IsSuccess)
+                var getResult = repository.GetAsync(predicateBuilder).Result;
+                if (getResult.Status.IsSuccess)
                 {
-                    getResult.Data.EmailAddress = "blackhat@hackermail.com";
-                    var updateResult = repository.Update(getResult.Data);
-                    var saveResult = ctx.Save();
+                    getResult.Data.JobTitle = "Pentester";
+                    var updateResult = repository.UpdateAsync(getResult.Data).Result;
+                    var saveResult = ctx.SaveAsync().Result;
                     Assert.IsTrue(saveResult.IsSuccess && saveResult.Errors.Count == 0);
                     getResult = repository.Get(predicateBuilder);
-                    if(getResult.Status.IsSuccess)
+                    if (getResult.Status.IsSuccess)
                     {
-                        Assert.AreEqual(getResult.Data.EmailAddress, "blackhat@hackermail.com");
+                        Assert.AreEqual(getResult.Data.JobTitle, "Pentester");
                     }
                     else
                     {
@@ -150,17 +150,17 @@ namespace DataHelpers.Tests
 
         }
         [TestMethod]
-        public void DeleteTest()
+        public void DeleteAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
             {
                 IRepository<Employee2> repository = ctx.Repository<Employee2>();
                 var predicateBuilder = PredicateBuilder.True<Employee2>()
-                    .And(x=> new int[] { 32,33 }.Contains(x.ID));
+                    .And(x => new int[] { 35, 36 }.Contains(x.ID));
 
-                var deleteResult = repository.Delete(predicateBuilder);
-                var saveResult = ctx.Save();
+                var deleteResult = repository.DeleteAsync(predicateBuilder).Result;
+                var saveResult = ctx.SaveAsync().Result;
                 if (deleteResult.Status.IsSuccess && saveResult.IsSuccess)
                 {
                     Assert.AreEqual(deleteResult.Data, 2);
@@ -170,7 +170,7 @@ namespace DataHelpers.Tests
             }
         }
         [TestMethod]
-        public void DeleteByParamsTest()
+        public void DeleteByParamsAsyncTest()
         {
 
             Register();
@@ -178,12 +178,12 @@ namespace DataHelpers.Tests
             {
                 IRepository<Employee2> repository = ctx.Repository<Employee2>();
                 var predicateBuilder = PredicateBuilder.True<Employee2>()
-                    .And(x => new int[] { 30, 31 }.Contains(x.ID));
-                var listResult = repository.GetAll(predicateBuilder);
-                if(listResult.Status.IsSuccess)
+                    .And(x => new int[] { 37,38 }.Contains(x.ID));
+                var listResult = repository.GetAllAsync(predicateBuilder).Result;
+                if (listResult.Status.IsSuccess)
                 {
-                    var deleteResult = repository.Delete(listResult.Data.ToArray());
-                    var saveResult = ctx.Save();
+                    var deleteResult = repository.DeleteAsync(listResult.Data.ToArray()).Result;
+                    var saveResult = ctx.SaveAsync().Result;
                     if (deleteResult.Status.IsSuccess && saveResult.IsSuccess)
                     {
                         Assert.AreEqual(deleteResult.Data, 2);
@@ -196,7 +196,7 @@ namespace DataHelpers.Tests
             }
         }
         //[TestMethod]
-        //public void GetByRangeTest()
+        //public void GetByRangeAsyncTest()
         //{
         //    Register();
         //    using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -205,14 +205,14 @@ namespace DataHelpers.Tests
         //            ctx.Repository<Employee2>();
         //        int pageIndex = 2;
         //        int pageSize = 10;
-        //        var getAllResult = repository.GetAllByPaging(pageIndex, pageSize);
+        //        var getAllResult = repository.GetAllByPagingAsync(pageIndex, pageSize).Result;
         //        Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
         //        Assert.AreEqual(getAllResult.Data.Count(), pageSize);
         //    }
 
         //}
         [TestMethod]
-        public void GetByRangeOrderAscTest()
+        public void GetByRangeOrderAscAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -221,7 +221,7 @@ namespace DataHelpers.Tests
                     ctx.Repository<Employee2>();
                 int pageIndex = 2;
                 int pageSize = 10;
-                var getAllResult = repository.GetAllByPaging(pageIndex, pageSize,x=>x.OrderBy(y=>y.FirstName));
+                var getAllResult = repository.GetAllByPagingAsync(pageIndex, pageSize, x => x.OrderBy(y => y.FirstName)).Result;
                 Assert.IsTrue(getAllResult.Status.IsSuccess && getAllResult.Status.Errors.Count == 0);
                 int actual = getAllResult.Data.Count();
                 Assert.AreEqual(actual, pageSize);
@@ -229,7 +229,7 @@ namespace DataHelpers.Tests
 
         }
         [TestMethod]
-        public void ExistsTest()
+        public void ExistsAsyncTest()
         {
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
@@ -239,8 +239,8 @@ namespace DataHelpers.Tests
                 string lastName = "Zena";
                 var filter = PredicateBuilder.True<Employee2>().And(x =>
                     x.FirstName.Equals(firstName, StringComparison.InvariantCultureIgnoreCase) &&
-                    x.LastName.Equals(lastName,StringComparison.InvariantCultureIgnoreCase));
-                var existsResult = repository.Exists(filter);
+                    x.LastName.Equals(lastName, StringComparison.InvariantCultureIgnoreCase));
+                var existsResult = repository.ExistsAsync(filter).Result;
                 if (existsResult.Status.IsSuccess)
                 {
                     Assert.IsTrue(existsResult.Data);
@@ -250,17 +250,17 @@ namespace DataHelpers.Tests
             }
         }
         [TestMethod]
-        public void ExecuteUpdateCommandTest()
+        public void ExecuteUpdateCommandAsyncTest()
         {
             string query = @"UPDATE Test.Employee
-                             SET EmailAddress = 'ken.zena@adventure-works.com' 
+                             SET EmailAddress = 'ken_zena@adventure-works.com' 
                              WHERE ID = @ID";
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
             {
                 IRepository<Employee2> repository = ctx.Repository<Employee2>();
-                var execResult = repository.ExecuteSqlCommand(query, new SqlParameter("@ID", 1));
-                if(execResult.Status.IsSuccess)
+                var execResult = repository.ExecuteSqlCommandAsync(query, new SqlParameter("@ID", 1)).Result;
+                if (execResult.Status.IsSuccess)
                 {
                     Assert.AreNotEqual(execResult.Data, 0);
                 }
@@ -271,19 +271,19 @@ namespace DataHelpers.Tests
             }
         }
         [TestMethod]
-        public void SqlQueryCommandTest()
+        public void SqlQueryCommandAsyncTest()
         {
             string query = @"SELECT * FROM Test.Employee WHERE FirstName LIKE CONCAT(@Name,'%')";
             Register();
             using (UnitOfWork ctx = _container.Resolve<UnitOfWork>())
             {
                 IRepository<Employee2> repository = ctx.Repository<Employee2>();
-                var execResult = repository.SqlQuery(query, new SqlParameter("@Name", "Matth"));
+                var execResult = repository.SqlQueryAsync(query, new SqlParameter("@Name", "Matth")).Result;
                 if (execResult.Status.IsSuccess)
                 {
                     var dataActual = execResult.Data.ToList();
-                    
-                    Assert.AreEqual(dataActual.Count, 2);
+
+                    Assert.AreEqual(dataActual.Count, 3);
                 }
                 else
                 {

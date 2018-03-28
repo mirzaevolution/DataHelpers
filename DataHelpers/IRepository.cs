@@ -17,15 +17,15 @@ namespace DataHelpers
 
         DataResult<IEnumerable<T>> GetAllByPaging
             (   int pageIndex, 
-                int pageSize, 
-                Expression<Func<T, bool>> filter = null,
-                Func<IQueryable<T>, IOrderedQueryable<T>> order = null
+                int pageSize,
+                Func<IQueryable<T>, IOrderedQueryable<T>> order,
+                Expression<Func<T, bool>> filter = null
             );
         Task<DataResult<IEnumerable<T>>> GetAllByPagingAsync
             (int pageIndex,
                 int pageSize,
-                Expression<Func<T, bool>> filter = null,
-                Func<IQueryable<T>, IOrderedQueryable<T>> order = null
+                Func<IQueryable<T>, IOrderedQueryable<T>> order,
+                Expression<Func<T, bool>> filter = null
             );
 
 
